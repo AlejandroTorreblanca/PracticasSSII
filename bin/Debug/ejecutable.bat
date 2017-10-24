@@ -1,0 +1,1 @@
+PracticaSSII.exe 8 100 1000 0.9 0.1 >> salida.txt
