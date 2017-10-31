@@ -3,9 +3,10 @@
 #include <ga/GA1DArrayGenome.h> // Genoma --> array de enteros (dim. 1) alelos
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 using namespace std;
 
-static int ngeneraciones=12000;
+
 
 struct plantilla{
        int tam;
@@ -92,7 +93,7 @@ int CruceSudoku(const GAGenome& p1,const GAGenome & p2,GAGenome* c1,GAGenome* c2
               // Hacer el casting correspondiente para obtener h1  //
               //***************************************************//
               //***************************************************//
-             GA1DArrayGenome<int> & h1 = (GA1DArrayGenome<int> &)c1;
+             GA1DArrayGenome<int> & h1 = (GA1DArrayGenome<int> &)*c1;
 
              h1.copy(m,0,0,punto1);
              h1.copy(p,punto1,punto1,punto2);
@@ -105,7 +106,7 @@ int CruceSudoku(const GAGenome& p1,const GAGenome & p2,GAGenome* c1,GAGenome* c2
               // Hacer el casting correspondiente para obtener h2  //
               //***************************************************//
               //***************************************************//
-             GA1DArrayGenome<int> & h2 = (GA1DArrayGenome<int> &)c2;
+             GA1DArrayGenome<int> & h2 = (GA1DArrayGenome<int> &)*c2;
 
              h2.copy(p,0,0,punto1);
              h2.copy(m,punto1,punto1,punto2);
@@ -115,8 +116,6 @@ int CruceSudoku(const GAGenome& p1,const GAGenome & p2,GAGenome* c1,GAGenome* c2
     return n;
 
 }
-
-
 
 void leerSudoku(struct plantilla *S,char *nombreF){
    ifstream f(nombreF);
@@ -129,6 +128,93 @@ void leerSudoku(struct plantilla *S,char *nombreF){
            f>>S->fijo[i];
 
    f.close();
+}
+
+bool checkColumna(int col[], int * check, int tam){
+     bool repe=false;
+
+     for(int i=0;i<tam;i++) check[i]=0;
+
+     for(int i=0;i<tam;i++)
+             check[col[i]-1]++;
+     for(int i=0;i<tam;i++) if (check[i]>1) repe=true;
+
+     return repe;
+}
+
+
+int MutacionSudoku(GAGenome& g,float pmut){
+
+     //*******************************************************//
+     //*******************************************************//
+     // Hacer el casting correspondiente para obtener genome  //
+     //*******************************************************//
+     //*******************************************************//
+    GA1DArrayAlleleGenome<int> & genome = (GA1DArrayAlleleGenome<int> &)g;
+
+    struct plantilla * plantilla1;
+    plantilla1 = (struct plantilla *) genome.userData();
+    int nmut=0;
+    int aux;
+    int fil;
+    bool fila;
+
+    int caux[plantilla1->tam];
+    int *checkC=new int[plantilla1->tam];
+
+    if (pmut<=0.0) return 0;
+
+    for(int f=0; f<plantilla1->tam; f++)
+       for(int c=0; c<plantilla1->tam; c++)
+          if (plantilla1->fijo[(f*plantilla1->tam)+c]==0){
+           if (GAFlipCoin(pmut) ){
+                if (GAFlipCoin(0.5)) fila = true;
+                else fila = false;
+
+                if (!fila){
+
+                      for(int j=0;j<plantilla1->tam;j++) caux[j]=genome.gene((j*plantilla1->tam)+c);
+                      if (checkColumna(caux,checkC,plantilla1->tam)){
+                         int v1 = GARandomInt(0,plantilla1->tam-1);
+                         while (checkC[v1]<=1) v1=(v1+1)%plantilla1->tam;
+                         v1++;
+                         int v2 = GARandomInt(0,plantilla1->tam-1);
+                         while (checkC[v2]!=0) v2=(v2+1)%plantilla1->tam;
+                         v2++;
+
+                         bool encontrado = false;
+                         for(int j=0;j<plantilla1->tam && !encontrado;j++)
+                                 if ((plantilla1->fijo[j*(plantilla1->tam)+c]==0)&&(genome.gene(j*(plantilla1->tam)+c)==v1)){
+                                    encontrado = true;
+                                    genome.gene((j*plantilla1->tam)+c,v2);
+                                    fil = j;
+                                 }
+
+                         int col=(c+1)%plantilla1->tam;
+                         while(genome.gene((fil*plantilla1->tam)+col)!=v2) col=(col+1)%plantilla1->tam;
+                         if (plantilla1->fijo[(fil*plantilla1->tam)+col]==0) {
+                                nmut++;
+                                genome.gene((fil*plantilla1->tam)+col,v1);
+                         }
+                         else {
+                              genome.gene((fil*plantilla1->tam)+c,v1);
+                         }
+
+                      }
+
+                }
+                else{
+                   int v1 = (c + 1) %plantilla1->tam;
+                   while ((plantilla1->fijo[(f*plantilla1->tam)+v1]!=0)) v1=(v1+1)%plantilla1->tam;
+                   aux = genome.gene((f*plantilla1->tam)+c);
+                   genome.gene((f*plantilla1->tam)+c,genome.gene((f*plantilla1->tam)+v1));
+                   genome.gene((f*plantilla1->tam)+v1,aux);
+                   nmut++;
+                }
+           }
+          }
+
+    return nmut;
 }
 
 int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCruces, pmutacion, nombrePlantilla
@@ -188,7 +274,7 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
 
 // Imprimimos el mejor individuo que encuentra el GA y su valor fitness
 
-    cout << "El GA encuentra la soluci\242n ( " << ga.statistics().bestIndividual() << ")" << endl;
+    cout << "El GA encuentra la solucion ( " << ga.statistics().bestIndividual() << ")" << endl;
     cout << "con valor fitness " << ga.statistics().minEver() << endl;
 }
 
@@ -196,9 +282,66 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
 
 float Objective(GAGenome& g) {
     GA1DArrayAlleleGenome<int> & genome = (GA1DArrayAlleleGenome<int> &)g;
+    int SIZE = 9;
+    int F[SIZE];
+    int C[SIZE];
+    int R[3][SIZE];
+    float valor=0;
+    int aux=0;
+    for(int i=0; i<genome.length(); i++)
+    {
+        //Comprobamos filas y columnas
+       for(int j=0;j<SIZE;j++)
+       {
+           F[j]=genome.gene(i);
+           C[j]=genome.gene(i+j*9);
+           if(j<3)
+           {
+               R[0][j]=genome.gene(i);
+           }
+           else if(j>=3 && j<6)
+                R[1][j]=genome.gene(i);
+           else R[2][j]=genome.gene(i);
+
+       }
+        aux++;
+        if(aux==3)
+        {
+            sort(R[0], R[0] + SIZE);
+            sort(R[1], R[1] + SIZE);
+            sort(R[2], R[2] + SIZE);
+            for(int k=0;k++;k<SIZE)
+            {
+                if(R[0][k]!=k+1)
+                     valor++;
+                if(R[1][k]!=k+1)
+                     valor++;
+                if(R[2][k]!=k+1)
+                     valor++;
+            }
+            aux=0;
+        }
+        sort(C, C + SIZE);
+        sort(F, F + SIZE);
+
+        for(int k=0;k++;k<SIZE)
+        {
+            if(C[k]!=k+1)
+                 valor++;
+            if(F[k]!=k+1)
+                 valor++;
+        }
+    }
+
+
+
+
+
+
+
+
     float jaques=0;
     int c,f;
-
     // jaques de misma fila
     for(int i=0; i<genome.length(); i++)
        for(int j=i+1;j<genome.length();j++)
@@ -233,6 +376,6 @@ float Objective(GAGenome& g) {
 
 GABoolean Termina(GAGeneticAlgorithm & ga){
     if ( (ga.statistics().minEver()==0) ||
-        (ga.statistics().generation()==ga.nGenerations()) ) return gaTrue;
+        (ga.statistics().generation()==120000) ) return gaTrue;
     else return gaFalse;
 }
