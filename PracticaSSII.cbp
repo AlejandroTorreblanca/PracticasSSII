@@ -13,10 +13,10 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="C:/Users/Alumno/Downloads/PracticasSSII-master/PracticasSSII-master/galib247-c2014/galib247-c2014" />
+					<Add directory="galib247-c2014/galib247-c2014" />
 				</Compiler>
 				<Linker>
-					<Add library="C:/Users/Alumno/Downloads/PracticasSSII-master/PracticasSSII-master/galib247-c2014/galib.a" />
+					<Add library="galib247-c2014/galib.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -35,7 +35,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="nreinas.cpp" />
+		<Unit filename="Sudoku.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
