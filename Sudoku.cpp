@@ -18,6 +18,19 @@ float Objective(GAGenome &); // Funcion objetivo --> al final
 
 GABoolean Termina(GAGeneticAlgorithm &); // Funcion de terminacion --> al final
 
+void imprimeSudoku(int tamSudoku, GAGeneticAlgorithm& ga)
+{
+     GA1DArrayGenome<int> & sudoku = (GA1DArrayGenome<int> &) ga.statistics().bestIndividual();
+     for(int i=0;i<sudoku.length();i++)
+     {
+         if(i%tamSudoku==0) cout<<endl;
+         cout << sudoku.gene(i)<< " ";
+
+
+     }
+     cout<<endl;
+}
+
 void InicioSudoku(GAGenome& g){
 
      //*******************************************************//
@@ -221,8 +234,18 @@ int MutacionSudoku(GAGenome& g,float pmut){
     return nmut;
 }
 
+void imprimeGenoma(GA1DArrayAlleleGenome<int> g)
+{
+    for(int i=0; i<9; i++)
+    {
+        for(int j=0; j<9; i++)
+            cout<<" " <<endl;
+    }
+
+}
 
 float Objective(GAGenome& g) {
+     cout<<"objective " <<endl;
     GA1DArrayAlleleGenome<int> & genome = (GA1DArrayAlleleGenome<int> &)g;
     int SIZE = 9;
     int F[SIZE];
@@ -230,88 +253,79 @@ float Objective(GAGenome& g) {
     int R[3][SIZE];
     float valor=0;
     int aux=0;
+    int fila=1;
     for(int i=0; i<genome.length(); i++)
     {
-        //Comprobamos filas y columnas
-       for(int j=0;j<SIZE;j++)
-       {
-           F[j]=genome.gene(i);
-           C[j]=genome.gene(i+j*9);
-           if(j<3)
-           {
-               R[0][j]=genome.gene(i);
-           }
-           else if(j>=3 && j<6)
-                R[1][j]=genome.gene(i);
-           else R[2][j]=genome.gene(i);
-
-       }
         aux++;
-        if(aux==3)
+        F[i%9]=genome.gene(i);      //Tomamos los valores de las filas
+        C[i%9]=genome.gene((i%9)*9+(fila-1));        //Tomamos los valores de las columnas
+        //Tomamos los valores de los cuadrados
+        if(fila%3==1)     //Si estamos en las tres primeras filas
         {
-            sort(R[0], R[0] + SIZE);
-            sort(R[1], R[1] + SIZE);
-            sort(R[2], R[2] + SIZE);
-            for(int k=0;k++;k<SIZE)
+            if(i%9<3)   //Tres primeras casillas
+                R[0][i%9]=genome.gene(i);
+            else if(i%9<6 && i%9>=3)    //Tres segundas casillas
+                R[0][i%9-3]=genome.gene(i);
+            else        //Tres ultimas casillas
+                R[0][i%9-6]=genome.gene(i);
+        }
+        else if(fila%3==2)  //Si estamos en las filas 4, 5 o 6
+        {
+            if(i%9<3)
+                R[0][i%9+3]=genome.gene(i);
+            else if(i%9<6 && i%9>=3)
+                R[0][i%9]=genome.gene(i);
+            else
+                R[0][i%9-3]=genome.gene(i);
+        }
+        else        //Si estamos en las tres ultimas filas
+        {
+            if(i%9<3)
+                R[0][i%9+6]=genome.gene(i);
+            else if(i%9<6 && i%9>=3)
+                R[0][i%9+3]=genome.gene(i);
+            else
+                R[0][i%9]=genome.gene(i);
+        }
+
+        if(aux%9==0)
+        {
+            if(fila%3==0)
             {
-                if(R[0][k]!=k+1)
+                sort(R[0], R[0] + SIZE);
+                sort(R[1], R[1] + SIZE);
+                sort(R[2], R[2] + SIZE);
+                for(int k=0;k<SIZE;k++)
+                {
+                    if(R[0][k]!=k+1)
+                         valor++;
+                    if(R[1][k]!=k+1)
+                         valor++;
+                    if(R[2][k]!=k+1)
+                         valor++;
+                }
+            }
+
+            sort(F, F + SIZE);
+            sort(C, C + SIZE);
+            for(int k=0;k<SIZE;k++)
+            {
+                if(C[k]!=k+1)
                      valor++;
-                if(R[1][k]!=k+1)
-                     valor++;
-                if(R[2][k]!=k+1)
+                if(F[k]!=k+1)
                      valor++;
             }
-            aux=0;
+            fila++;
         }
-        sort(C, C + SIZE);
-        sort(F, F + SIZE);
 
-        for(int k=0;k++;k<SIZE)
-        {
-            if(C[k]!=k+1)
-                 valor++;
-            if(F[k]!=k+1)
-                 valor++;
-        }
+        if(aux%9==0)
+            cout<<"" <<endl;
+        else cout << genome.gene(i) <<" ";;
+
+
     }
-
-
-
-
-
-
-
-
-    float jaques=0;
-    int c,f;
-    // jaques de misma fila
-    for(int i=0; i<genome.length(); i++)
-       for(int j=i+1;j<genome.length();j++)
-            if (genome.gene(i)==genome.gene(j)) jaques++;
-
-    // jaques en diagonal
-    for(int en_est=0;en_est<genome.length();en_est++){
-
-	  // diagonal derecha abajo
-	  c=en_est+1;
-	  f=genome.gene(en_est)+1;
-	  while ((c<genome.length()) && (f<genome.length())){
-	  	  if (genome.gene(c)==f) jaques++;
-	  	  c++;
-	  	  f++;
-	  }
-
-	  // diagonal derecha arriba
-	  c=en_est+1;
-	  f=genome.gene(en_est)-1;
-	  while ((c<genome.length()) && (f>=0)){
-	  	 if (genome.gene(c)==f) jaques++;
-	  	  c++;
-	  	  f--;
-	  }
-    }
-
-    return jaques;
+    cout<<"valor= " << valor<<endl;
+    return valor;
 }
 
 
@@ -322,25 +336,12 @@ GABoolean Termina(GAGeneticAlgorithm & ga){
 }
 
 
-void imprimeSudoku(int tamSudoku, GAGeneticAlgorithm& ga)
-{
-     GA1DArrayGenome<int> & sudoku = (GA1DArrayGenome<int> &) ga.statistics().bestIndividual();
-     for(int i=0;i<sudoku.length();i++)
-     {
-         if(i%tamSudoku==0) cout<<endl;
-         cout << sudoku.gene(i)<< " ";
-
-
-     }
-     cout<<endl;
-}
-
-
 int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCruces, pmutacion, nombrePlantilla
 {
     if (argc != 6) {
-       cerr << "Argumentos incorrectos" << endl;
-       cerr << "Forma de uso: ./Sudoku.exe  Poblacion Selector{ruleta,torneo} ProbCruce ProbMutacion fichero.txt" << endl;
+             cout << "- error: "  << endl;
+       cout << "Argumentos incorrectos" << endl;
+       cout << "Forma de uso: ./Sudoku.exe  Poblacion Selector{ruleta,torneo} ProbCruce ProbMutacion fichero.txt" << endl;
        return -1;
     }
 
@@ -349,7 +350,7 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
 // Declaramos variables para los parametros del GA y las inicializamos
     int poblacionSize=atoi(argv[1]);
     string selector = argv[2];
-    int pcruce = atoi(argv[3]);
+    float pcruce = atof(argv[3]);
     float pmut = atof(argv[4]);
     char * file = argv[5];
 
@@ -403,7 +404,7 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
     }
     else
     {
-        cerr << "Tipo de selector incorrecto, los valores permitidos son {ruleta,torneo}" << endl;
+        cout << "Tipo de selector incorrecto, los valores permitidos son {ruleta,torneo}" << endl;
         return -1;
     }
 
@@ -414,6 +415,7 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
     cout << "El GA encuentra la solucion: " << endl;
     imprimeSudoku(plantillaInicial.tam,ga);
     cout << "El valor fitness es: " << ga.statistics().minEver() << endl;
+
 }
 
 
