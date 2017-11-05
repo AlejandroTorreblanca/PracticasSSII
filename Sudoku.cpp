@@ -245,85 +245,76 @@ void imprimeGenoma(GA1DArrayAlleleGenome<int> g)
 }
 
 float Objective(GAGenome& g) {
-     cout<<"objective " <<endl;
+//     cout<<"objective " <<endl;
     GA1DArrayAlleleGenome<int> & genome = (GA1DArrayAlleleGenome<int> &)g;
     int SIZE = 9;
     int F[SIZE];
     int C[SIZE];
     int R[3][SIZE];
+    //int G[SIZE][SIZE];
+    memset(C, 0, sizeof(C));
+    memset(F, 0, sizeof(F));
+    memset(R, 0, sizeof(R));
     float valor=0;
     int aux=0;
     int fila=1;
     for(int i=0; i<genome.length(); i++)
     {
         aux++;
-        F[i%9]=genome.gene(i);      //Tomamos los valores de las filas
-        C[i%9]=genome.gene((i%9)*9+(fila-1));        //Tomamos los valores de las columnas
+        F[genome.gene(i)-1]++;      //Tomamos los valores de las filas
+        if(F[genome.gene(i)-1]>=2)
+            valor++;
+
+        int f=genome.gene((i%9)*9+(fila-1));
+        C[f-1]++;        //Tomamos los valores de las columnas
+        if(C[f-1]>=2)
+            valor++;
+        int n=0;
+        //G[fila-1][i%9]=C[f-1];
+
         //Tomamos los valores de los cuadrados
-        if(fila%3==1)     //Si estamos en las tres primeras filas
-        {
-            if(i%9<3)   //Tres primeras casillas
-                R[0][i%9]=genome.gene(i);
-            else if(i%9<6 && i%9>=3)    //Tres segundas casillas
-                R[1][i%9-3]=genome.gene(i);
-            else        //Tres ultimas casillas
-                R[2][i%9-6]=genome.gene(i);
+        if(i%9<3){   //Tres primeras casillas
+            R[0][genome.gene(i)-1]++;
+            n=0;
         }
-        else if(fila%3==2)  //Si estamos en las filas 4, 5 o 6
-        {
-            if(i%9<3)
-                R[0][i%9+3]=genome.gene(i);
-            else if(i%9<6 && i%9>=3)
-                R[1][i%9]=genome.gene(i);
-            else
-                R[2][i%9-3]=genome.gene(i);
+        else if(i%9<6 && i%9>=3){    //Tres segundas casillas
+            R[1][genome.gene(i)-1]++;
+            n=1;
         }
-        else        //Si estamos en las tres ultimas filas
-        {
-            if(i%9<3)
-                R[0][i%9+6]=genome.gene(i);
-            else if(i%9<6 && i%9>=3)
-                R[1][i%9+3]=genome.gene(i);
-            else
-                R[2][i%9]=genome.gene(i);
+        else {       //Tres ultimas casillas
+            R[2][genome.gene(i)-1]++;
+            n=2;
         }
+        if(R[n][genome.gene(i)-1]>=2)
+            valor++;
 
         if(aux%9==0)
         {
+//            for(int r=0;r<SIZE;r++)
+//                G[fila-1][r]=C[r];
+            memset(C, 0, sizeof(C));
+            memset(F, 0, sizeof(F));
             if(fila%3==0)
             {
-                sort(R[0], R[0] + SIZE);
-                sort(R[1], R[1] + SIZE);
-                sort(R[2], R[2] + SIZE);
-                for(int k=0;k<SIZE;k++)
-                {
-                    if(R[0][k]!=k+1)
-                         valor++;
-                    if(R[1][k]!=k+1)
-                         valor++;
-                    if(R[2][k]!=k+1)
-                         valor++;
-                }
-            }
-
-            sort(F, F + SIZE);
-            sort(C, C + SIZE);
-            for(int k=0;k<SIZE;k++)
-            {
-                if(C[k]!=k+1)
-                     valor++;
-                if(F[k]!=k+1)
-                     valor++;
+                memset(R, 0, sizeof(R));
             }
             fila++;
         }
 
-//        if(aux%9==0)
+//        if(i%9==0)
 //            cout<<"" <<endl;
-//        else cout << genome.gene(i) <<" ";;
+//        cout << genome.gene(i) <<" ";
 
 
     }
+//    cout<<"" <<endl;
+//    cout<<"Array C:" <<endl;
+//    for(int k=0;k<SIZE;k++)
+//    {
+//        for(int l=0;l<SIZE;l++)
+//            cout << G[k][l] <<" ";
+//        cout<<"" <<endl;
+//    }
     cout<<"valor= " << valor<<endl;
     return valor;
 }

@@ -1,1 +1,1 @@
-PracticaSSII.exe 8 100 1000 0.9 0.1 >> salida.txt
+aa.exe 100 ruleta 0.8 0.1 Sudoku-1.txt > salida.txt
