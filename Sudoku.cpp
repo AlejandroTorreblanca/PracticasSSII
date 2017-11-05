@@ -265,27 +265,27 @@ float Objective(GAGenome& g) {
             if(i%9<3)   //Tres primeras casillas
                 R[0][i%9]=genome.gene(i);
             else if(i%9<6 && i%9>=3)    //Tres segundas casillas
-                R[0][i%9-3]=genome.gene(i);
+                R[1][i%9-3]=genome.gene(i);
             else        //Tres ultimas casillas
-                R[0][i%9-6]=genome.gene(i);
+                R[2][i%9-6]=genome.gene(i);
         }
         else if(fila%3==2)  //Si estamos en las filas 4, 5 o 6
         {
             if(i%9<3)
                 R[0][i%9+3]=genome.gene(i);
             else if(i%9<6 && i%9>=3)
-                R[0][i%9]=genome.gene(i);
+                R[1][i%9]=genome.gene(i);
             else
-                R[0][i%9-3]=genome.gene(i);
+                R[2][i%9-3]=genome.gene(i);
         }
         else        //Si estamos en las tres ultimas filas
         {
             if(i%9<3)
                 R[0][i%9+6]=genome.gene(i);
             else if(i%9<6 && i%9>=3)
-                R[0][i%9+3]=genome.gene(i);
+                R[1][i%9+3]=genome.gene(i);
             else
-                R[0][i%9]=genome.gene(i);
+                R[2][i%9]=genome.gene(i);
         }
 
         if(aux%9==0)
@@ -318,9 +318,9 @@ float Objective(GAGenome& g) {
             fila++;
         }
 
-        if(aux%9==0)
-            cout<<"" <<endl;
-        else cout << genome.gene(i) <<" ";;
+//        if(aux%9==0)
+//            cout<<"" <<endl;
+//        else cout << genome.gene(i) <<" ";;
 
 
     }
