@@ -336,7 +336,7 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
     float pmut = atof(argv[4]);
     char * file = argv[5];
 
-    cout << selector <<" "<< poblacionSize<<" "<< pcruce <<" "<< pmut ;
+    cout << selector <<" "<< poblacionSize<<" "<< pcruce <<" "<< pmut << endl ;
 
 //Leemos el fichero de la plantilla
 
@@ -390,8 +390,8 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
 
 // Imprimimos el mejor individuo que encuentra el GA y su valor fitness
 
-//    cout << "El GA encuentra la solucion: " << endl;
-//    imprimeSudoku(plantillaInicial.tam,ga);
+    cout << "El GA encuentra la solucion: " << endl;
+    imprimeSudoku(plantillaInicial.tam,ga);
     cout << " " << ga.statistics().minEver()<<" " <<ga.statistics().generation()<< endl;
 
 
