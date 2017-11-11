@@ -234,15 +234,6 @@ int MutacionSudoku(GAGenome& g,float pmut){
     return nmut;
 }
 
-void imprimeGenoma(GA1DArrayAlleleGenome<int> g)
-{
-    for(int i=0; i<9; i++)
-    {
-        for(int j=0; j<9; i++)
-            cout<<" " <<endl;
-    }
-
-}
 
 float Objective(GAGenome& g) {
 //     cout<<"objective " <<endl;
@@ -315,7 +306,7 @@ float Objective(GAGenome& g) {
 //            cout << G[k][l] <<" ";
 //        cout<<"" <<endl;
 //    }
-    cout<<"valor= " << valor<<endl;
+    //cout<<"valor= " << valor<<endl;
     return valor;
 }
 
@@ -345,11 +336,7 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
     float pmut = atof(argv[4]);
     char * file = argv[5];
 
-    cout << "Parametros:  \n- Poblacion size: " << poblacionSize << endl;
-    cout << "- Selector utilizado: " << selector << endl;
-    cout << "- Probabilidad cruce: " << pcruce << endl;
-    cout << "- Probabilidad mutacion: " << pmut << endl ;
-    cout << "- Nombre de la plantilla: " << file << endl << endl;
+    cout << selector <<" "<< poblacionSize<<" "<< pcruce <<" "<< pmut ;
 
 //Leemos el fichero de la plantilla
 
@@ -403,9 +390,10 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
 
 // Imprimimos el mejor individuo que encuentra el GA y su valor fitness
 
-    cout << "El GA encuentra la solucion: " << endl;
-    imprimeSudoku(plantillaInicial.tam,ga);
-    cout << "El valor fitness es: " << ga.statistics().minEver() << endl;
+//    cout << "El GA encuentra la solucion: " << endl;
+//    imprimeSudoku(plantillaInicial.tam,ga);
+    cout << " " << ga.statistics().minEver()<<" " <<ga.statistics().generation()<< endl;
+
 
 }
 
