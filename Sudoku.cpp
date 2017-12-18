@@ -4,9 +4,12 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+
+/***** IMPORTANTE: No se han utilizado acentos en los comentarios por dar problemas con la codificacion. *****/
+
 using namespace std;
-int const GENERACIONES=12000;   //
-int const TAMSUDOKU=81;
+int const GENERACIONES=12000;   //Numero maximo de generaciones
+int const TAMSUDOKU=81;         //Numero de casillas del sudoku
 
 struct plantilla{
        int tam;
@@ -18,6 +21,7 @@ float Objective(GAGenome &); // Funcion objetivo --> al final
 
 GABoolean termina(GAGeneticAlgorithm &); // Funcion de terminacion --> al final
 
+/** Imprime el sudoku que representa el individuo pasado como parametro de tamaño tamSudoku **/
 void imprimeSudoku(int tamSudoku, GAGeneticAlgorithm& ga)
 {
      GA1DArrayGenome<int> & sudoku = (GA1DArrayGenome<int> &) ga.statistics().bestIndividual();
@@ -31,6 +35,7 @@ void imprimeSudoku(int tamSudoku, GAGeneticAlgorithm& ga)
      cout<<endl;
 }
 
+/** Funcion de inicialización de un individuo **/
 void InicioSudoku(GAGenome& g){
 
      GA1DArrayGenome<int> & genome = (GA1DArrayGenome<int> &)g; //Hacemos el correspondiente casting
@@ -77,7 +82,7 @@ void InicioSudoku(GAGenome& g){
      }
 }
 
-
+/** Funcion de cruce, le pasamos como parametros los individuos padres y los dos hijos que resultaran del cruce **/
 int CruceSudoku(const GAGenome& p1,const GAGenome & p2,GAGenome* c1,GAGenome* c2){
 
     GA1DArrayGenome<int> & m = (GA1DArrayGenome<int> &)p1;      //Casting del los padres
@@ -105,7 +110,7 @@ int CruceSudoku(const GAGenome& p1,const GAGenome & p2,GAGenome* c1,GAGenome* c2
     return n;
 }
 
-
+/** Leemos el fichero que contendra el sudoku que deseamos resolver, lo transformamos en un objeto plantilla **/
 void leerSudoku(struct plantilla *S,char *nombreF){
    ifstream f(nombreF);
 
@@ -132,7 +137,7 @@ bool checkColumna(int col[], int * check, int tam){
      return repe;
 }
 
-
+/** Funcion de mutacion, le pasamos el individuo que puede sufrir una mutación con una probabilidad de pmut **/
 int MutacionSudoku(GAGenome& g,float pmut){
 
     GA1DArrayGenome<int> & genome = (GA1DArrayGenome<int> &)g;      //Casting del individuo
@@ -203,7 +208,7 @@ int MutacionSudoku(GAGenome& g,float pmut){
     return nmut;
 }
 
-
+/** Funcion fitness, retorna el valor fitness del individuo pasado como parametro **/
 float Objective(GAGenome& g) {
 
     GA1DArrayAlleleGenome<int> & genome = (GA1DArrayAlleleGenome<int> &)g;
@@ -260,14 +265,14 @@ float Objective(GAGenome& g) {
     return valor;
 }
 
-
+/** Funcion de finalizacion, comprueba si se ha llegado a una solucion o se ha superado el numero maximo de generaciones **/
 GABoolean termina(GAGeneticAlgorithm & ga){
     if ( (ga.statistics().minEver()==0) ||
         (ga.statistics().generation()==GENERACIONES) ) return gaTrue;   //Comprobamos que no hemos llegado a ninguna solucion y que las generaciones son menores de 12000
     else return gaFalse;
 }
 
-
+/** Funcion principal **/
 int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCruces, pmutacion, nombrePlantilla
 {
     if (argc != 6) {
@@ -276,32 +281,30 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
        cout << "Forma de uso: ./Sudoku.exe  Poblacion Selector{ruleta,torneo} ProbCruce ProbMutacion fichero.txt" << endl;
        return -1;
     }
-
-
-
 // Declaramos variables para los parametros del GA y las inicializamos
     int poblacionSize=atoi(argv[1]);
     string selector = argv[2];
     float pcruce = atof(argv[3]);
     float pmut = atof(argv[4]);
     char * file = argv[5];
+    cout <<" " <<endl;
+    cout <<"* * * * * * * * * * * * * * *  " <<endl;
+    cout <<" " <<endl;
+    cout <<"Selector: " <<selector <<" Tamaño población: "<< poblacionSize<<" Probabiliad de Cruce: "<< pcruce <<" Probabiliad de Mutación "<< pmut << endl ;
 
-    cout << selector <<" "<< poblacionSize<<" "<< pcruce <<" "<< pmut << endl ;
-
-//Leemos el fichero de la plantilla
+// Leemos el fichero de la plantilla
 
     plantilla plantillaInicial;
     leerSudoku(&plantillaInicial,file);
 
-// Conjunto enumerado de alelos --> valores posibles de cada gen del genoma
+//Damos valores a los alelos
 
     GAAlleleSet<int> alelos;
     for(int i=1;i<=TAMSUDOKU;i++) alelos.add(i);      //Los alelos toman los valores entre 1-9
 
 // Creamos el genoma y definimos operadores de inicio, cruce y mutación
 
-    GA1DArrayGenome<int> genome(TAMSUDOKU,Objective,&plantillaInicial);   //cambiamos variables
-
+    GA1DArrayGenome<int> genome(TAMSUDOKU,Objective,&plantillaInicial);
     genome.initializer(InicioSudoku);   //Establecemos el operador de inicializacion
     genome.crossover(CruceSudoku);      //Establecemos el operador de cruce
     genome.mutator(MutacionSudoku);     //Establecemos el operador de mutacion
@@ -309,9 +312,6 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
 // Creamos el algoritmo genetico
 
     GASimpleGA ga(genome);
-
-// Inicializamos - minimizar funcion objetivo, tamaño poblacion, nº generaciones,
-// pr. cruce y pr. mutacion, selección y le indicamos que evolucione.
 
     ga.minimaxi(-1);                    //Establecemos que el algoritmo genetico es de minimizar
     ga.populationSize(poblacionSize);   //Establecemos el tamaño de la poblacion
@@ -340,9 +340,12 @@ int main(int argc, char **argv) //var: sudokuSize, poblacionsize, operador, pCru
 
 // Imprimimos el mejor individuo que encuentra el GA y su valor fitness
 
-    cout << "El GA encuentra la solucion: " << endl;
+    if(ga.statistics().minEver()==0)
+        cout << "El GA encuentra la solucion: " << endl;
+    else
+        cout << "El GA no encuentra ninguna solucion: " << endl;
     imprimeSudoku(plantillaInicial.tam,ga);
-    cout << " " << ga.statistics().minEver()<<" " <<ga.statistics().generation()<< endl;
+    cout << "\nValor Fitness=" << ga.statistics().minEver()<<" Genraciones=" <<ga.statistics().generation()<< endl;
 
 
 }
